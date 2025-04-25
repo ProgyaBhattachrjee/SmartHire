@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Add Candidate</title>
+  </head>
+  <body>
+    <h1>Add Candidate</h1>
+    <form action="/add_candidate" method="POST" enctype="multipart/form-data">
+      <label for="resume">Upload Resume (PDF):</label>
+      <input
+        type="file"
+        id="resume"
+        name="resume"
+        accept=".pdf"
+        required
+      /><br />
+
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html>
