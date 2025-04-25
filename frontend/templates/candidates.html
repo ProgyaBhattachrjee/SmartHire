@@ -9,6 +9,7 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body style="background-color: #f7f9fc">
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -24,33 +25,174 @@
 
     <div class="container mt-5">
       <h2 class="text-center text-primary mb-4">Candidate List</h2>
-      {% if candidates %}
-      <div class="table-responsive">
-        <table class="table table-bordered table-striped align-middle">
-          <thead class="table-primary">
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Skills</th>
-              <th>Experience (Years)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for candidate in candidates %}
-            <tr>
-              <td>{{ candidate[1] }}</td>
-              <td>{{ candidate[2] }}</td>
-              <td>{{ candidate[3] }}</td>
-              <td>{{ candidate[4] }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+
+      <!-- Filtering Section -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <label for="skillFilter" class="form-label">Filter by Skills:</label>
+          <select id="skillFilter" class="form-select">
+            <option value="">All Skills</option>
+            <!-- Dynamically fill options based on unique skills -->
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label for="experienceFilter" class="form-label"
+            >Filter by Experience:</label
+          >
+          <select id="experienceFilter" class="form-select">
+            <option value="">All Experience</option>
+            <option value="0">0 years</option>
+            <option value="1">1 year</option>
+            <option value="2">2 years</option>
+            <option value="3">3 years</option>
+            <option value="4">4 years</option>
+            <option value="5">5+ years</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label for="nameFilter" class="form-label">Search by Name:</label>
+          <input
+            type="text"
+            id="nameFilter"
+            class="form-control"
+            placeholder="Search by name"
+          />
+        </div>
       </div>
+
+      {% if candidates %}
+      <table class="table table-striped table-bordered" id="candidatesTable">
+        <thead class="table-primary">
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Skills</th>
+            <th>Experience</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for candidate in candidates %}
+          <tr>
+            <td>{{ candidate[1] }}</td>
+            <td>{{ candidate[2] }}</td>
+            <td>{{ candidate[3] }}</td>
+            <td>{{ candidate[4] }} years</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
       {% else %}
       <p class="text-center text-muted">No candidates found.</p>
       {% endif %}
     </div>
+
+    <!-- Skill Chart -->
+    <div class="container mt-5">
+      <h4 class="text-center text-secondary mb-3">Top Skills Overview</h4>
+      <canvas id="skillChart" height="100"></canvas>
+    </div>
+
+    <script>
+      // Extracted from server
+      const candidates = {{ candidates | tojson }};
+
+      // Get unique skills for filtering
+      const allSkills = candidates.flatMap(candidate => candidate[3].split(',').map(skill => skill.trim().toLowerCase()));
+      const uniqueSkills = [...new Set(allSkills)];
+
+      // Populate the skill filter dropdown
+      const skillFilter = document.getElementById('skillFilter');
+      uniqueSkills.forEach(skill => {
+        const option = document.createElement('option');
+        option.value = skill;
+        option.textContent = skill.charAt(0).toUpperCase() + skill.slice(1);
+        skillFilter.appendChild(option);
+      });
+
+      // Filter candidates based on selected filters
+      function filterCandidates() {
+        const skill = skillFilter.value;
+        const experience = experienceFilter.value;
+        const nameSearch = nameFilter.value.toLowerCase();
+
+        const filteredCandidates = candidates.filter(candidate => {
+          const skillMatch = skill ? candidate[3].toLowerCase().includes(skill) : true;
+          const experienceMatch = experience ? (candidate[4] >= experience) : true;
+          const nameMatch = candidate[1].toLowerCase().includes(nameSearch);
+
+          return skillMatch && experienceMatch && nameMatch;
+        });
+
+        updateCandidateTable(filteredCandidates);
+        updateChart(filteredCandidates);
+      }
+
+      // Update the candidate table dynamically
+      function updateCandidateTable(filteredCandidates) {
+        const tableBody = document.querySelector('#candidatesTable tbody');
+        tableBody.innerHTML = '';
+
+        filteredCandidates.forEach(candidate => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${candidate[1]}</td>
+            <td>${candidate[2]}</td>
+            <td>${candidate[3]}</td>
+            <td>${candidate[4]} years</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      }
+
+      // Update the skills chart dynamically
+      function updateChart(filteredCandidates) {
+        const skillCounts = {};
+
+        filteredCandidates.forEach(candidate => {
+          const skills = candidate[3]?.split(',') || [];
+          skills.forEach(skill => {
+            const trimmedSkill = skill.trim().toLowerCase();
+            if (trimmedSkill) {
+              skillCounts[trimmedSkill] = (skillCounts[trimmedSkill] || 0) + 1;
+            }
+          });
+        });
+
+        const labels = Object.keys(skillCounts);
+        const data = Object.values(skillCounts);
+
+        const ctx = document.getElementById('skillChart').getContext('2d');
+        const skillChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Number of Candidates',
+              data: data,
+              backgroundColor: 'rgba(54, 162, 235, 0.6)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      }
+
+      // Event listeners for filters
+      document.getElementById('skillFilter').addEventListener('change', filterCandidates);
+      document.getElementById('experienceFilter').addEventListener('change', filterCandidates);
+      document.getElementById('nameFilter').addEventListener('input', filterCandidates);
+
+      // Initial chart and table render
+      updateCandidateTable(candidates);
+      updateChart(candidates);
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   </body>
