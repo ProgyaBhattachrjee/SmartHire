@@ -117,6 +117,71 @@ def add_candidate():
 def list_candidates():
     candidates = get_all_candidates()
     return render_template('candidates.html', candidates=candidates)
+@app.route('/upload_job_description', methods=['POST'])
+def upload_job_description():
+    if 'job_description' not in request.files:
+        return 'No file part', 400
+
+    file = request.files['job_description']
+
+    if file.filename == '':
+        return 'No selected file', 400
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        job_desc_text = extract_job_description(filepath)
+
+        # Now we can use this job description to compare candidates
+        candidates = get_all_candidates()
+        job_fit_scores = match_candidates_to_job(candidates, job_desc_text)
+
+        # Return the scores for display
+        return render_template('candidate_matching.html', job_fit_scores=job_fit_scores)
+
+    return 'Invalid file format', 400
+
+# Function to extract text from the job description file (PDF/Text)
+def extract_job_description(filepath):
+    text = ""
+    if filepath.endswith('.pdf'):
+        with open(filepath, 'rb') as file:
+            reader = PyPDF2.PdfReader(file)
+            for page in range(len(reader.pages)):
+                text += reader.pages[page].extract_text()
+    elif filepath.endswith('.txt'):
+        with open(filepath, 'r') as file:
+            text = file.read()
+    return text
+
+# Function to match candidates to job description
+def match_candidates_to_job(candidates, job_desc):
+    job_desc_keywords = job_desc.lower().split()  # Basic keyword matching
+    job_fit_scores = []
+
+    for candidate in candidates:
+        skills = candidate[3].lower().split(',')  # Extract skills from candidate (assuming 4th column is skills)
+        score = sum(1 for skill in skills if skill.strip() in job_desc_keywords)
+        job_fit_scores.append({
+            'candidate_name': candidate[1],
+            'email': candidate[2],
+            'score': score
+        })
+
+    # Sort by score in descending order
+    job_fit_scores.sort(key=lambda x: x['score'], reverse=True)
+    return job_fit_scores
+# Route for Job Description Page
+@app.route('/job_description')
+def job_description():
+    return render_template('job_description.html')
+
+# Route for Candidate Matching Page
+@app.route('/candidate_matching')
+def candidate_matching():
+    return render_template('candidate_matching.html')
 
 # Route for the home page
 @app.route('/')

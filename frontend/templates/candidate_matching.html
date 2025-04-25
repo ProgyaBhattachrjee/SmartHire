@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Candidate Matching | SmartHire Insights</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f7f9fc;
+      }
+      .score-table {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+        background-color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">SmartHire Insights</a>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <h2 class="text-center text-primary mb-4">
+        Candidate Matching for Job Description
+      </h2>
+      {% if job_fit_scores %}
+      <div class="table-responsive score-table">
+        <table class="table table-striped mb-0">
+          <thead class="table-primary">
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Job Fit Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for score in job_fit_scores %}
+            <tr>
+              <td>{{ score.candidate_name }}</td>
+              <td>{{ score.email }}</td>
+              <td>{{ score.score }}%</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-center text-muted mt-4">No matching candidates found.</p>
+      {% endif %}
+
+      <div class="text-center mt-4">
+        <a href="/" class="btn btn-outline-primary">Back to Home</a>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

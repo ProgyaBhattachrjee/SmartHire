@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Upload Job Description | SmartHire Insights</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f7f9fc;
+      }
+      .form-box {
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">SmartHire Insights</a>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="form-box">
+            <h3 class="text-center text-primary mb-3">
+              Upload Job Description
+            </h3>
+            <p class="text-muted text-center mb-4">
+              Upload a job description in PDF or TXT format. The system will
+              automatically analyze and compare it against uploaded candidate
+              resumes to identify the most relevant matches based on skills and
+              experience.
+            </p>
+            <form
+              action="/upload_job_description"
+              method="POST"
+              enctype="multipart/form-data"
+            >
+              <div class="mb-3">
+                <label for="job_description" class="form-label"
+                  >Select a Job Description File:</label
+                >
+                <input
+                  type="file"
+                  id="job_description"
+                  name="job_description"
+                  accept=".pdf, .txt"
+                  class="form-control"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-primary w-100">
+                Upload Job Description
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
