@@ -17,8 +17,6 @@ def extract_skills(text):
 def extract_experience(text):
     experience_match = re.search(r"Experience?:\s*(\d+)\s*(years|year)", text)
     return experience_match.group(1) if experience_match else "Not Available"
-
-# Testing the extraction
 name = extract_name(text)
 email = extract_email(text)
 skills = extract_skills(text)

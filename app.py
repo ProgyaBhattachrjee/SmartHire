@@ -22,8 +22,6 @@ def extract_candidate_info_from_resume(filepath):
     email = extract_email_from_text(text)
     skills = extract_skills_from_text(text)
     experience = extract_experience_from_text(text)
-
-    # Debug: Check extracted fields
     print(f"Extracted Name: {name}")
     print(f"Extracted Email: {email}")
     print(f"Extracted Skills: {skills}")
